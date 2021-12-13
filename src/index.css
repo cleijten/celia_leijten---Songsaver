@@ -11,3 +11,13 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.song-row__item {
+  width: 200px;
+}
+
+.song-row__header {
+  width: 200px;
+  font-weight: bold;
+}
+
