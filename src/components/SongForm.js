@@ -1,7 +1,7 @@
 import React from "react";
 
 function SongForm(props) {
-  console.log("songform", props);
+//   console.log("songform", props);
   return (
     <form onSubmit={props.handleSubmit}>
       <input
