@@ -45,29 +45,23 @@ class SongOverview extends Component {
           rating: 5,
         },
       ],
-      ratings: [
-        {
-          one: false,
-          two: false,
-          three: false,
-          four: false,
-          five: false,
-        },
-      ],
     };
+
+    this.baseState = this.state;
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.handleFilterGenre = this.handleFilterGenre.bind(this);
     this.handleFilterRating = this.handleFilterRating.bind(this);
+    this.handleReset = this.handleReset.bind(this);
   }
 
   handleSubmit = (song) => {
     song.preventDefault();
     this.setState((prevState) => {
       const newSongs = [...prevState.songs];
-      console.log("new Songs:", newSongs);
+      //console.log("new Songs:", newSongs);
       const newSong = {
         id: prevState.songs.length + 1,
         title: this.state.title,
@@ -75,22 +69,26 @@ class SongOverview extends Component {
         genre: this.state.genre,
         rating: this.state.rating,
       };
-      console.log("new Song:", newSong);
-      newSongs.push(newSong);
-      const newStateSongs = { ...prevState, songs: newSongs };
-      console.log("new Statesongs", newStateSongs);
 
+      //console.log("new Song:", newSong);
+      newSongs.push(newSong);
+
+      const newStateSongs = { ...prevState, songs: newSongs };
+      //console.log("new Statesongs", newStateSongs);
+
+      document.getElementById("form-create-song").reset();
       return newStateSongs;
     });
   };
 
-  handleDelete = (e) => {
-    e.preventDefault();
+  handleDelete = (event) => {
+    event.preventDefault();
     // console.log("delete button clicked");
 
     this.setState((prevState) => {
       const newSongs = [...prevState.songs];
-      const tdId = e.target.parentElement.parentElement.firstChild.innerHTML;
+      const tdId =
+        event.target.parentElement.parentElement.firstChild.innerHTML;
       const foundId = newSongs.find(({ id }) => id === tdId);
       const index = newSongs.indexOf(foundId);
 
@@ -112,75 +110,53 @@ class SongOverview extends Component {
 
   handleFilterGenre(event) {
     event.preventDefault();
-    // const { name, value, type, checked } = event.target;
-    // console.log("event target is ", event.target);
 
     this.setState((prevState) => {
-      console.log("selected genre");
-      const selectedGenre = event.target.value;
-      console.log("selected genre is", selectedGenre);
-      const selectedProperty = event.target.name;
-      console.log("selected filter is ", selectedProperty);
+      let selectedGenre = event.target.value;
+      // console.log("selected genre is", selectedGenre);
       const newSongs = [...prevState.songs];
+
       const filteredSongs = newSongs.filter(
         (item) => item.genre === selectedGenre
       );
-      const newStateSongs = { ...prevState, songs: filteredSongs };
+      const newStateSongs = { songs: filteredSongs };
+
+      // console.log("prevState", prevState);
 
       return newStateSongs;
     });
   }
 
-  //een genre selecteren gaat goed, maar als je daarna een ander genre wilt selecteren gaat dat niet want prevState is de nieuwe state, dus op een of andere manier moet ik de filters instellen op de this.state en niet op prevstate. als ik dit kan oplossen dan kan ik verder met de checkboxen
-
   handleFilterRating(event) {
     event.preventDefault();
-    const { name, checked } = event.target;
-    //  console.log("event target is ", event.target);
+
     this.setState((prevState) => {
-      //   console.log("checkbox ticked")
-      const ratings = prevState.ratings;
+      let selectedRating = parseInt(event.target.value);
+      //  console.log("selected rating is", selectedRating);
       const newSongs = [...prevState.songs];
-      //  console.log("ratings is", ratings)
-      ratings[name] = checked;
-      //  console.log("ratings name is", [name])
-      if (ratings.one) {
-        console.log("one is ticked");
-        const filteredSongs = newSongs.filter((item) => item.rating === 1);
-        const newStateSongs = { ...prevState, songs: filteredSongs };
-        return newStateSongs;
-      }
-      if (ratings.two) {
-        console.log("two is ticked");
-        const filteredSongs = newSongs.filter((item) => item.rating === 2);
-        const newStateSongs = { ...prevState, songs: filteredSongs };
-        return newStateSongs;
-      }
-      if (ratings.three) {
-        console.log("three is ticked");
-        const filteredSongs = newSongs.filter((item) => item.rating === 3);
-        const newStateSongs = { ...prevState, songs: filteredSongs };
-        return newStateSongs;
-      }
-      if (ratings.four) {
-        console.log("four is ticked");
-        const filteredSongs = newSongs.filter((item) => item.rating === 4);
-        const newStateSongs = { ...prevState, songs: filteredSongs };
-        return newStateSongs;
-      }
-      if (ratings.five) {
-        console.log("five is ticked");
-        const filteredSongs = newSongs.filter((item) => item.rating === 5);
-        const newStateSongs = { ...prevState, songs: filteredSongs };
-        return newStateSongs;
-      }
+
+      const filteredSongs = newSongs.filter(
+        (item) => item.rating === selectedRating
+      );
+      const newStateSongs = { songs: filteredSongs };
+
+      // console.log("prevState", prevState);
+
+      return newStateSongs;
     });
   }
 
+  //reset to original state
+
+  handleReset(event) {
+    event.preventDefault();
+    this.setState(this.baseState);
+  }
+
   render() {
-    const songsObj = [...this.state.songs];
+    const songsObj = this.state.songs;
     const sortedSongs = songsObj.sort((a, b) => (a.artist > b.artist ? 1 : -1));
-    console.log("sorted", sortedSongs);
+    // console.log("sorted", sortedSongs);
     const songComponents = sortedSongs.map((item) => {
       return <SongList key={item.id} song={item} onClick={this.handleDelete} />;
     });
@@ -189,12 +165,18 @@ class SongOverview extends Component {
       <div>
         <h1>Playlist</h1>
 
-        <FilterGenre handleChange={this.handleFilterGenre} data={this.state} />
+        <FilterGenre
+          handleChange={this.handleFilterGenre}
+          data={this.state}
+          onClick={this.handleReset}
+        />
+
         <FilterRating
           handleChange={this.handleFilterRating}
           data={this.state}
+          onClick={this.handleReset}
         />
-
+        <h3>List of songs</h3>
         <table>
           <tbody>
             <tr className="song-header">
@@ -218,8 +200,3 @@ class SongOverview extends Component {
 }
 
 export default SongOverview;
-
-// const sortedSongs = newStateSongs.songs.sort((a, b) => {
-//     return a[this.state.artist] - b[this.state.artist]
-// })
-// console.log("sorted Songs", sortedSongs)
