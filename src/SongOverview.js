@@ -3,6 +3,7 @@ import SongForm from "./components/SongForm";
 import SongList from "./components/SongList";
 import FilterGenre from "./components/FilterGenre";
 import FilterRating from "./components/FilterRating";
+import SongSort from "./components/SongSort";
 
 class SongOverview extends Component {
   constructor() {
@@ -55,13 +56,15 @@ class SongOverview extends Component {
     this.handleFilterGenre = this.handleFilterGenre.bind(this);
     this.handleFilterRating = this.handleFilterRating.bind(this);
     this.handleReset = this.handleReset.bind(this);
+    this.handleSorting = this.handleSorting.bind(this);
   }
 
+  //add a song
   handleSubmit = (song) => {
     song.preventDefault();
+
     this.setState((prevState) => {
       const newSongs = [...prevState.songs];
-      //console.log("new Songs:", newSongs);
       const newSong = {
         id: prevState.songs.length + 1,
         title: this.state.title,
@@ -70,20 +73,17 @@ class SongOverview extends Component {
         rating: this.state.rating,
       };
 
-      //console.log("new Song:", newSong);
       newSongs.push(newSong);
-
       const newStateSongs = { ...prevState, songs: newSongs };
-      //console.log("new Statesongs", newStateSongs);
-
       document.getElementById("form-create-song").reset();
+
       return newStateSongs;
     });
   };
 
+  //delete a song
   handleDelete = (event) => {
     event.preventDefault();
-    // console.log("delete button clicked");
 
     this.setState((prevState) => {
       const newSongs = [...prevState.songs];
@@ -91,13 +91,9 @@ class SongOverview extends Component {
         event.target.parentElement.parentElement.firstChild.innerHTML;
       const foundId = newSongs.find(({ id }) => id === tdId);
       const index = newSongs.indexOf(foundId);
-
-      // console.log("id is", tdId)
-      // console.log("index is", index)
-      // console.log("newsongs is", newSongs)
-
       newSongs.splice(index, 1);
       const newStateSongs = { ...prevState, songs: newSongs };
+
       return newStateSongs;
     });
   };
@@ -108,12 +104,54 @@ class SongOverview extends Component {
     this.setState({ [name]: value });
   }
 
+  //sort songs on different properties
+  handleSorting(event) {
+    event.preventDefault();
+
+    this.setState((prevState) => {
+      const newSongs = [...prevState.songs];
+      switch (event.target.value) {
+
+        case "title":
+          const sortedSongsA = newSongs.sort((a, b) =>
+            a.title > b.title ? 1 : -1
+          );
+          const newStateSongsA = { songs: sortedSongsA };
+          return newStateSongsA;
+
+        case "artist":
+          const sortedSongsB = newSongs.sort((a, b) =>
+            a.artist > b.artist ? 1 : -1
+          );
+          const newStateSongsB = { songs: sortedSongsB };
+          return newStateSongsB;
+        
+        case "genre":
+          const sortedSongsC = newSongs.sort((a, b) =>
+            a.genre > b.genre ? 1 : -1
+          );
+          const newStateSongsC = { songs: sortedSongsC };
+          return newStateSongsC;
+        
+        case "rating":
+          const sortedSongsD = newSongs.sort((a, b) =>
+            a.rating > b.rating ? 1 : -1
+          );
+          const newStateSongsD = { songs: sortedSongsD };
+          return newStateSongsD;
+        
+        default:
+          return prevState;
+      }
+    });
+  }
+
+  // filter songs on Genre
   handleFilterGenre(event) {
     event.preventDefault();
 
     this.setState((prevState) => {
       let selectedGenre = event.target.value;
-      // console.log("selected genre is", selectedGenre);
       const newSongs = [...prevState.songs];
 
       const filteredSongs = newSongs.filter(
@@ -121,18 +159,16 @@ class SongOverview extends Component {
       );
       const newStateSongs = { songs: filteredSongs };
 
-      // console.log("prevState", prevState);
-
       return newStateSongs;
     });
   }
 
+  //filter songs on rating
   handleFilterRating(event) {
     event.preventDefault();
 
     this.setState((prevState) => {
       let selectedRating = parseInt(event.target.value);
-      //  console.log("selected rating is", selectedRating);
       const newSongs = [...prevState.songs];
 
       const filteredSongs = newSongs.filter(
@@ -140,54 +176,52 @@ class SongOverview extends Component {
       );
       const newStateSongs = { songs: filteredSongs };
 
-      // console.log("prevState", prevState);
-
       return newStateSongs;
     });
   }
 
   //reset to original state
-
   handleReset(event) {
     event.preventDefault();
     this.setState(this.baseState);
   }
 
+
   render() {
     const songsObj = this.state.songs;
-    const sortedSongs = songsObj.sort((a, b) => (a.artist > b.artist ? 1 : -1));
-    // console.log("sorted", sortedSongs);
-    const songComponents = sortedSongs.map((item) => {
+    const songComponents = songsObj.map((item) => {
       return <SongList key={item.id} song={item} onClick={this.handleDelete} />;
     });
 
     return (
       <div>
         <h1>Playlist</h1>
+        <div id="filter">
+          <FilterGenre
+            handleChange={this.handleFilterGenre}
+            data={this.state}
+            onClick={this.handleReset}
+          />
 
-        <FilterGenre
-          handleChange={this.handleFilterGenre}
-          data={this.state}
-          onClick={this.handleReset}
-        />
+          <FilterRating
+            handleChange={this.handleFilterRating}
+            data={this.state}
+            onClick={this.handleReset}
+          />
+          <SongSort handleChange={this.handleSorting} data={this.state} />
+        </div>
 
-        <FilterRating
-          handleChange={this.handleFilterRating}
-          data={this.state}
-          onClick={this.handleReset}
-        />
-        <h3>List of songs</h3>
         <table>
           <tbody>
             <tr className="song-header">
-              <td className="song-row__header">Song</td>
+              <td className="song-row__header">Title</td>
               <td className="song-row__header">Artist</td>
               <td className="song-row__header">Genre</td>
               <td className="song-row__header">Rating</td>
             </tr>
+            {songComponents}
           </tbody>
         </table>
-        {songComponents}
 
         <SongForm
           handleChange={this.handleChange}
